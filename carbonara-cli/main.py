@@ -1,6 +1,6 @@
 import sys
 import time
-import zlib
+import requests
 from guanciale import *
 
 if len(sys.argv) < 2 or sys.argv[1] == "-help":
@@ -99,11 +99,8 @@ else:
     bi.generateInfo()
 data = bi.toJson()
 
-outfile = open(sys.argv[1] + ".analisys.json", "w")
+outfile = open(os.path.basename(sys.argv[1]) + ".analisys.json", "w")
 outfile.write(data)
-outfile.close()
-outfile = open(sys.argv[1] + ".analisys.json.gz", "w")
-outfile.write(zlib.compress(data))
 outfile.close()
 
 print

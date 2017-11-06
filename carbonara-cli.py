@@ -1,1 +1,3 @@
-cli = __import__("carbonara-cli")
+#!/usr/bin/env python
+
+__import__("carbonara-cli")
