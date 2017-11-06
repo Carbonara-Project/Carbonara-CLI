@@ -21,5 +21,7 @@ setup(
     url='https://github.com/Carbonara-Project/Carbonara-CLI',
     package_dir={'carbonara-cli': 'carbonara-cli'},
     packages=['carbonara-cli'],
-    scripts=['carbonara-cli.py']
+    scripts=['carbonara-cli.py'],
+    dependency_links=['https://github.com/Carbonara-Project/Guanciale/tarball/master#egg=guanciale-1.0']
 )
+
