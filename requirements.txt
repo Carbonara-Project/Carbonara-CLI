@@ -1,1 +1,2 @@
 requests
+-e git+https://github.com/Carbonara-Project/Guanciale.git#egg=guanciale
