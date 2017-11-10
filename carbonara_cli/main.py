@@ -124,4 +124,6 @@ def main():
     print "elapsed time: " + str(time.time() - start_time)
 
 
-main()
+if __name__ == "__main__":
+    main()
+

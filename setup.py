@@ -29,7 +29,7 @@ setup(
     ],
     entry_points={
           'console_scripts': [
-              'carbonara_cli = carbonara_cli.__main__:main'
+              'carbonara_cli = carbonara_cli.main:main'
           ]
       },
 )
