@@ -1,6 +1,7 @@
 import sys
 import time
 import requests
+import progressbar
 from guanciale import *
 
 if len(sys.argv) < 2 or sys.argv[1] == "-help":
@@ -13,6 +14,22 @@ binary = None
 hasdb = False
 
 config.populate()
+
+#report status on stdout using a progressbar
+class ProgressBarStatus(status.Status):
+    def __init__(self, maxval):
+        self.pgbar = progressbar.ProgressBar(redirect_stdout=True, max_value=maxval)
+    
+    def update(self, num):
+        self.pgbar.update(num)
+        
+    def __enter__(self):
+        return self.pgbar.__enter__()
+
+    def __exit__(self, type, value, traceback):
+        self.pgbar.__exit__(type, value, traceback)
+
+status.Status = ProgressBarStatus
 
 i = 1
 while i < len(sys.argv):
@@ -62,7 +79,6 @@ while i < len(sys.argv):
     elif sys.argv[i] == "-reconfig":
         config.generateConfig()
     elif sys.argv[i] == "-writeconfig":
-        print "Y"
         config.writeConfig()
     elif binary == None:
         binary = sys.argv[i]

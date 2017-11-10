@@ -25,6 +25,7 @@ setup(
     dependency_links=['https://github.com/Carbonara-Project/Guanciale/tarball/master#egg=guanciale-1.0alpha'],
     install_requires=[
         'requests',
+        'progressbar2',
         'guanciale'
     ]
 )
