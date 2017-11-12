@@ -19,18 +19,16 @@ setup(
     author=__author__,
     author_email=__email__,
     url='https://github.com/Carbonara-Project/Carbonara-CLI',
+    download_url = 'https://github.com/Carbonara-Project/Carbonara-CLI/archive/1.0alpha.tar.gz',
     package_dir={'carbonara_cli': 'carbonara_cli'},
     packages=['carbonara_cli'],
-    dependency_links=['https://github.com/Carbonara-Project/Guanciale/tarball/master#egg=guanciale-1.0alpha'],
     install_requires=[
         'requests',
         'progressbar2',
         'guanciale'
     ],
     entry_points={
-          'console_scripts': [
-              'carbonara_cli = carbonara_cli.main:main'
-          ]
-      },
+        'console_scripts': ['carbonara_cli = carbonara_cli.main:main']
+    },
 )
 
