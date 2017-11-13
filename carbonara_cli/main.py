@@ -109,7 +109,7 @@ def main():
         print "ABORT"
         exit(1)
     if "idb" in args:
-        bi.fromIdb(args["idb"])
+        bi.fromIdaDB(args["idb"])
     elif "r2" in args:
         bi.fromR2Project(args["r2"])
     else:
