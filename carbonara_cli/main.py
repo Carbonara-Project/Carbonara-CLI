@@ -88,7 +88,7 @@ def main():
         else:
             dbfile = sys.argv[i]
             ext = os.path.splitext(dbfile)[-1]
-            if ext == "idb" or ext == "i64":
+            if ext == ".idb" or ext == ".i64":
                 args["idb"] = dbfile
             else:
                 print "message: no project type info, Radare2 assumed"
