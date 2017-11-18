@@ -7,19 +7,15 @@ __email__ = "andreafioraldi@gmail.com, willownoises@gmail.com"
 
 from setuptools import setup
 
-with open('README.md') as readme_file:
-    readme = readme_file.read()
-
 setup(
     name='carbonara_cli',
-    version="1.0alpha",
+    version="1.0.2",
     license=__license__,
     description='CLI interface for Carbonara',
-    long_description=readme,
     author=__author__,
     author_email=__email__,
     url='https://github.com/Carbonara-Project/Carbonara-CLI',
-    download_url = 'https://github.com/Carbonara-Project/Carbonara-CLI/archive/1.0alpha.tar.gz',
+    download_url = 'https://github.com/Carbonara-Project/Carbonara-CLI/archive/1.0.1.tar.gz',
     package_dir={'carbonara_cli': 'carbonara_cli'},
     packages=['carbonara_cli'],
     install_requires=[

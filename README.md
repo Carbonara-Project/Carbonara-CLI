@@ -24,6 +24,7 @@ Download pyvex wheel at
 * 64 bit: https://github.com/Carbonara-Project/Carbonara-Downloads/raw/master/pyvex-7.7.9.14-py2-none-win_amd64.whl
 
 ```
+> python -m pip install https://github.com/Carbonara-Project/Carbonara-Downloads/raw/master/pyvex-7.7.9.14-py2-none-win_amd64.whl
 > python -m pip install -r requirements.txt
 > python setup.py install
 ```
