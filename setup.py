@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='carbonara_cli',
-    version="1.0.3",
+    version="1.0.4",
     license=__license__,
     description='CLI interface for Carbonara',
     author=__author__,
