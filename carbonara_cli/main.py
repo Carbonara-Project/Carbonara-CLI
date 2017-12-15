@@ -116,7 +116,7 @@ def main():
         bi.generateInfo()
     data = bi.toJson()
 
-    outfile = open(os.path.basename(sys.argv[1]) + ".analisys.json", "w")
+    outfile = open(os.path.basename(sys.argv[1]) + ".analysis.json", "w")
     outfile.write(data)
     outfile.close()
 
