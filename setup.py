@@ -7,19 +7,20 @@ __email__ = "andreafioraldi@gmail.com, willownoises@gmail.com"
 
 from setuptools import setup
 
+VER = "1.0.4"
+
 setup(
     name='carbonara_cli',
-    version="1.0.4",
+    version=VER,
     license=__license__,
     description='CLI interface for Carbonara',
     author=__author__,
     author_email=__email__,
     url='https://github.com/Carbonara-Project/Carbonara-CLI',
-    download_url = 'https://github.com/Carbonara-Project/Carbonara-CLI/archive/1.0.1.tar.gz',
+    download_url = 'https://github.com/Carbonara-Project/Carbonara-CLI/archive/' + VER + '.tar.gz',
     package_dir={'carbonara_cli': 'carbonara_cli'},
     packages=['carbonara_cli'],
     install_requires=[
-        'requests',
         'progressbar2',
         'guanciale'
     ],
