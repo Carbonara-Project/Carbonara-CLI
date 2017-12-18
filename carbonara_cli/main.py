@@ -2,14 +2,11 @@ import sys
 import time
 import requests
 import progressbar
-from guanciale import *
+import json
+import os
+from guanciale.core import *
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] == "-help":
-        print "usage: python carbonara-cli.py [OPTIONS] <binary file>"
-        print
-        exit(0)
-
     args = {}
     binary = None
     hasdb = False
@@ -32,9 +29,25 @@ def main():
 
     status.Status = ProgressBarStatus
 
+    r2plugin = False
+    if "R2PIPE_IN" in os.environ:
+        r2plugin = True
+    
+    if (len(sys.argv) < 2 or sys.argv[1] == "-help") and not r2plugin:
+        print "usage: python carbonara-cli.py [OPTIONS] <binary file>"
+        print
+        exit(0)
+    
     i = 1
     while i < len(sys.argv):
-        if sys.argv[i] == "-r2proj":
+        if sys.argv[i] == "-p" or sys.argv[i] == "--proc":
+            if i == len(sys.argv) -1:
+                print "error: arg '--proc': expected one argument"
+                print "ABORT"
+                exit(1)
+            args["proc"] = sys.argv[i+1]
+            i += 1
+        elif sys.argv[i] == "-r2proj":
             if i == len(sys.argv) -1:
                 print "error: arg '-r2proj': expected one argument"
                 print "ABORT"
@@ -95,28 +108,52 @@ def main():
                 args["r2"] = dbfile
         i += 1
 
-    if binary == None:
+    if binary == None and not r2plugin:
         print "error: binary file not provided"
         print "ABORT"
         exit(1)
 
     start_time = time.time()
-
+    
     try:
-        bi = BinaryInfo(binary)
+        if r2plugin and binary == None:
+            bi = BinaryInfo(R2PLUGIN)
+        else:
+            bi = BinaryInfo(binary)
     except IOError as err:
         print "error: %s" % err
         print "ABORT"
         exit(1)
+    bi.addAdditionalInfo()
+    bi.addStrings()
+    
     if "idb" in args:
-        bi.fromIdaDB(args["idb"])
+        bi.grabProcedures("idapro", args["idb"])
     elif "r2" in args:
-        bi.fromR2Project(args["r2"])
+        bi.grabProcedures("radare2", args["r2"])
     else:
-        bi.generateInfo()
-    data = bi.toJson()
+        bi.grabProcedures("radare2")
+    
+    if "proc" in args:
+        pdata = bi.processSingle(args["proc"])
+        if pdata == None:
+            print "error: procedure not found"
+            exit(1)
+        try:
+            data = json.dumps(pdata, indent=2)
+        except IOError as err:
+            print "error: %s" % err
+            print "ABORT"
+            exit(1)
+    else:
+        try:
+            data = json.dumps(bi.processAll(), indent=2)
+        except IOError as err:
+            print "error: %s" % err
+            print "ABORT"
+            exit(1)
 
-    outfile = open(os.path.basename(sys.argv[1]) + ".analysis.json", "w")
+    outfile = open(os.path.basename(bi.filename) + ".analysis.json", "w")
     outfile.write(data)
     outfile.close()
 
