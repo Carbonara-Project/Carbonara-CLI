@@ -4,7 +4,7 @@ import requests
 import progressbar
 import json
 import os
-from guanciale.core import *
+from guanciale import *
 
 def main():
     args = {}
@@ -124,8 +124,9 @@ def main():
         print "error: %s" % err
         print "ABORT"
         exit(1)
-    bi.addAdditionalInfo()
-    bi.addStrings()
+    if "proc" not in args:
+        bi.addAdditionalInfo()
+        bi.addStrings()
     
     if "idb" in args:
         bi.grabProcedures("idapro", args["idb"])
@@ -145,6 +146,7 @@ def main():
             print "error: %s" % err
             print "ABORT"
             exit(1)
+        outfile = open(os.path.basename(bi.filename) + "_" + hex(pdata["procedure"]["offset"]) + ".procedure.json", "w")
     else:
         try:
             data = json.dumps(bi.processAll(), indent=2)
@@ -152,8 +154,8 @@ def main():
             print "error: %s" % err
             print "ABORT"
             exit(1)
-
-    outfile = open(os.path.basename(bi.filename) + ".analysis.json", "w")
+        outfile = open(os.path.basename(bi.filename) + ".analysis.json", "w")
+        
     outfile.write(data)
     outfile.close()
 
