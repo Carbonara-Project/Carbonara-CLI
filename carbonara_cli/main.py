@@ -156,7 +156,7 @@ def main():
             exit(1)
         outfile = open(os.path.basename(bi.filename) + ".analysis.json", "w")
     
-    bi.__del__()    
+    del bi  
     outfile.write(data)
     outfile.close()
 
