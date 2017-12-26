@@ -267,6 +267,7 @@ def main():
             outfile.write(data)
             outfile.close()
     
+    del bi  
     print " >> elapsed time: " + str(time.time() - start_time)
 
 
