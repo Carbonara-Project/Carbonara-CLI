@@ -53,6 +53,7 @@ def get_token():
             r = requests.post(CARBONARA_URL + "/users/auth/token", data=auth_body)
         except:
             return "cannot get auth token"
+        print r.status_code, r.json()
         if r.status_code != 200:
             return "cannot get auth token"
         token = r.json()["access_token"]
@@ -233,7 +234,7 @@ def main():
             #TODO chech status code
             headers = {"Authorization": "Bearer " + token}
             try:
-                r = requests.post(CARBONARA_URL + "/api/procedure/update", headers=headers)
+                r = requests.post(CARBONARA_URL + "/api/procedure/update", headers=headers, data=data)
             except:
                 err = True
         if err:
@@ -254,10 +255,12 @@ def main():
         err = get_token()
         if token:
             headers = {"Authorization": "Bearer " + token}
+            binfile = open(bi.filename, "rb")
             try:
-                r = requests.post(CARBONARA_URL + "/api/report", headers=headers)
+                r = requests.post(CARBONARA_URL + "/api/report", headers=headers, data=data, files={"binary":(os.basename(bi.filename), binfile.read())})
             except:
                 err = True
+            binfile.close()
         if err:
             if err != True:
                 printwarn(err)
