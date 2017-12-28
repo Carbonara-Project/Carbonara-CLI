@@ -113,6 +113,14 @@ def main():
                 exit(1)
             args["proc"] = sys.argv[i+1]
             i += 1
+        elif sys.argv[i] == "-s" or sys.argv[i] == "--save":
+            args["save"] = 1
+        elif sys.argv[i] == "-l" or sys.argv[i] == "--load":
+            if i == len(sys.argv) -1:
+                printerr("arg '--load': expected one argument")
+                exit(1)
+            args["load"] = sys.argv[i+1]
+            i += 1
         elif sys.argv[i] == "-r2proj":
             if i == len(sys.argv) -1:
                 printerr("arg '-r2proj': expected one argument")
@@ -208,36 +216,54 @@ def main():
             exit(1)
         exit(0)
     
-    if "proc" not in args:
-        bi.addAdditionalInfo()
-        bi.addStrings()
-    
-    if "idb" in args:
-        bi.grabProcedures("idapro", args["idb"])
-    elif "r2" in args:
-        bi.grabProcedures("radare2", args["r2"])
+    savedproc = False
+    if "load" in args:
+        infile = open(args["load"], "r")
+        saved = infile.read()
+        infile.close()
+        if args["load"].endswith("procedure.json"):
+            savedproc = True
     else:
-        bi.grabProcedures("radare2")
-    
-    if "proc" in args:
-        data = bi.processSingle(args["proc"])
-        if data == None:
-            printerr("procedure not found")
-            exit(1)
+        if "proc" not in args:
+            bi.addAdditionalInfo()
+            bi.addStrings()
         
-        err = get_token()
-        if token:
-            #TODO chech status code
-            headers = {"Authorization": "Bearer " + token}
-            try:
-                r = requests.post(CARBONARA_URL + "/api/procedure/update/", headers=headers, files={"report":json.dumps(data)})
-            except:
-                err = True
-        if err:
-            if err != True:
+        if "idb" in args:
+            bi.grabProcedures("idapro", args["idb"])
+        elif "r2" in args:
+            bi.grabProcedures("radare2", args["r2"])
+        else:
+            bi.grabProcedures("radare2")
+        
+    
+    if "proc" in args or savedproc:
+        if savedproc:
+            data = json.loads(saved)
+        else:
+            data = bi.processSingle(args["proc"])
+            if data == None:
+                printerr("procedure not found")
+                exit(1)
+        
+        err = None
+        if "save" not in args:
+            err = get_token()
+            if token:
+                #TODO chech status code
+                headers = {"Authorization": "Bearer " + token}
+                try:
+                    print(" >> Uploading to Carbonara...")
+                    r = requests.post(CARBONARA_URL + "/api/procedure/update/", headers=headers, files={"report":json.dumps(data)})
+                    if r.status_code != 200:
+                        err = True
+                except:
+                    err = True
+        if err or "save" in args:
+            if err and err != True:
                 printwarn(err)
             fname = os.path.basename(bi.filename) + "_" + hex(data["procedure"]["offset"]) + ".procedure.json"
-            printwarn("failed to connect to Carbonara, the output will be saved in a file (" + fname + ")")
+            if err:
+                printwarn("failed to upload to Carbonara, the output will be saved in a file (" + fname + ")")
             try:
                 data = json.dumps(data, indent=2)
             except IOError as err:
@@ -246,26 +272,38 @@ def main():
             outfile = open(fname, "w")
             outfile.write(data)
             outfile.close()
+        else:
+            print(" >> Successful upload")
     else:
-        data = bi.processAll()
-        err = get_token()
-        if token:
-            headers = {"Authorization": "Bearer " + token}
-            binfile = open(bi.filename, "rb")
-            try:
-                r = requests.post(CARBONARA_URL + "/api/report/", headers=headers, files={
-                    "binary":(os.path.basename(bi.filename), binfile.read()),
-                    "report":json.dumps(data)
-                    })
-            except:
-                err = True
-
-            binfile.close()
-        if err:
-            if err != True:
+        if "load" in args:
+            data = json.loads(saved)
+        else:
+            data = bi.processAll()
+        
+        err = None
+        if "save" not in args:
+            err = get_token()
+            if token:
+                headers = {"Authorization": "Bearer " + token}
+                binfile = open(bi.filename, "rb")
+                try:
+                    print(" >> Uploading to Carbonara...")
+                    r = requests.post(CARBONARA_URL + "/api/report/", headers=headers, files={
+                        "binary":(os.path.basename(bi.filename), binfile.read()),
+                        "report":json.dumps(data)
+                        })
+                    if r.status_code != 200:
+                        #print r.content
+                        err = True
+                except:
+                    err = True
+                binfile.close()
+        if err or "save" in args:
+            if err and err != True:
                 printwarn(err)
             fname = os.path.basename(bi.filename) + ".analysis.json"
-            printwarn("failed to connect to Carbonara, the output will be saved in a file (" + fname + ")")
+            if err:
+                printwarn("failed to upload to Carbonara, the output will be saved in a file (" + fname + ")")
             try:
                 data = json.dumps(data, indent=2)
             except IOError as err:
@@ -274,6 +312,8 @@ def main():
             outfile = open(fname, "w")
             outfile.write(data)
             outfile.close()
+        else:
+            print(" >> Successful upload")
     
     del bi  
     print " >> elapsed time: " + str(time.time() - start_time)
