@@ -44,7 +44,7 @@ def get_token():
         username = raw_input("Username: ")
         password = getpass.getpass("Password: ")
         auth_body = {
-            "client_id": "lhMcNHozKwZIrzoKdnJbozgXGsxKEcxs2hB0cvON",
+            "client_id": "PaHuVmEKJNYoYOXcHpqrWc4CTUmTgvN0qMNwMPRw",
             "grant_type": "password",
             "username": username,
             "password": password
@@ -53,7 +53,7 @@ def get_token():
             r = requests.post(CARBONARA_URL + "/users/auth/token", data=auth_body)
         except:
             return "cannot get auth token"
-        print r.status_code, r.json()
+        
         if r.status_code != 200:
             return "cannot get auth token"
         token = r.json()["access_token"]
@@ -183,6 +183,7 @@ def main():
         else:
             bi = BinaryInfo(binary)
     except IOError as err:
+        print()
         printerr(err)
         exit(1)
     
@@ -219,14 +220,9 @@ def main():
         bi.grabProcedures("radare2")
     
     if "proc" in args:
-        pdata = bi.processSingle(args["proc"])
-        if pdata == None:
+        data = bi.processSingle(args["proc"])
+        if data == None:
             printerr("procedure not found")
-            exit(1)
-        try:
-            data = json.dumps(pdata, indent=2)
-        except IOError as err:
-            printerr(err)
             exit(1)
         
         err = get_token()
@@ -234,38 +230,47 @@ def main():
             #TODO chech status code
             headers = {"Authorization": "Bearer " + token}
             try:
-                r = requests.post(CARBONARA_URL + "/api/procedure/update", headers=headers, data=data)
+                r = requests.post(CARBONARA_URL + "/api/procedure/update/", headers=headers, files={"report":json.dumps(data)})
             except:
                 err = True
         if err:
             if err != True:
                 printwarn(err)
-            fname = os.path.basename(bi.filename) + "_" + hex(pdata["procedure"]["offset"]) + ".procedure.json"
+            fname = os.path.basename(bi.filename) + "_" + hex(data["procedure"]["offset"]) + ".procedure.json"
             printwarn("failed to connect to Carbonara, the output will be saved in a file (" + fname + ")")
+            try:
+                data = json.dumps(data, indent=2)
+            except IOError as err:
+                printerr(err)
+                exit(1)
             outfile = open(fname, "w")
             outfile.write(data)
             outfile.close()
     else:
-        try:
-            data = json.dumps(bi.processAll(), indent=2)
-        except IOError as err:
-            printerr(err)
-            exit(1)
-        
+        data = bi.processAll()
         err = get_token()
         if token:
             headers = {"Authorization": "Bearer " + token}
             binfile = open(bi.filename, "rb")
             try:
-                r = requests.post(CARBONARA_URL + "/api/report", headers=headers, data=data, files={"binary":(os.basename(bi.filename), binfile.read())})
+                r = requests.post(CARBONARA_URL + "/api/report/", headers=headers, files={
+                    "binary":(os.path.basename(bi.filename), binfile.read()),
+                    "report":json.dumps(data)
+                    })
             except:
                 err = True
+
             binfile.close()
         if err:
             if err != True:
                 printwarn(err)
             fname = os.path.basename(bi.filename) + ".analysis.json"
             printwarn("failed to connect to Carbonara, the output will be saved in a file (" + fname + ")")
+            try:
+                data = json.dumps(data, indent=2)
+            except IOError as err:
+                printerr(err)
+                exit(1)
             outfile = open(fname, "w")
             outfile.write(data)
             outfile.close()
