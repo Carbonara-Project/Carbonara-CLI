@@ -12,6 +12,7 @@ dirs = appdirs.AppDirs("carbonara_cli")
 token_path = os.path.join(os.path.dirname(dirs.user_config_dir), "carbonara_cli.token")
 
 CARBONARA_URL = "https://carbonara-backend.herokuapp.com"
+CLIENT_ID="q6ml00MJ3vUP3diY6d2Ktg4T1wUawouE5WzpWNw7"
 
 token = None
 
@@ -44,7 +45,7 @@ def get_token():
         username = raw_input("Username: ")
         password = getpass.getpass("Password: ")
         auth_body = {
-            "client_id": "PaHuVmEKJNYoYOXcHpqrWc4CTUmTgvN0qMNwMPRw",
+            "client_id": CLIENT_ID,
             "grant_type": "password",
             "username": username,
             "password": password
@@ -293,7 +294,7 @@ def main():
                         "report":json.dumps(data)
                         })
                     if r.status_code != 200:
-                        #print r.content
+                        print r.content
                         err = True
                 except:
                     err = True
