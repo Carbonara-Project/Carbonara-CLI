@@ -11,8 +11,8 @@ from guanciale import *
 dirs = appdirs.AppDirs("carbonara_cli")
 token_path = os.path.join(os.path.dirname(dirs.user_config_dir), "carbonara_cli.token")
 
-CARBONARA_URL = "https://carbonara-backend.herokuapp.com"
-CLIENT_ID="q6ml00MJ3vUP3diY6d2Ktg4T1wUawouE5WzpWNw7"
+CARBONARA_URL = "http://carbonara-backend.herokuapp.com"
+CLIENT_ID="TzfN0E5s1aXIpgpc282hi975FBRoWY4Jb4ifpP3H"
 
 token = None
 
