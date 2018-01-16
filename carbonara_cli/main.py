@@ -101,7 +101,7 @@ def main():
         r2plugin = True
     
     if (len(sys.argv) < 2 or sys.argv[1] == "-help") and not r2plugin:
-        print LMAG_BG + "  usage  " + NC + " python carbonara-cli.py [OPTIONS] <binary file> "
+        print LMAG_BG + "  usage  " + NC + " carb [OPTIONS] <binary file> "
         exit(0)
     
     i = 1

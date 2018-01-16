@@ -7,7 +7,7 @@ __email__ = "andreafioraldi@gmail.com, willownoises@gmail.com"
 
 from setuptools import setup
 
-VER = "1.0.6"
+VER = "1.0.7"
 
 setup(
     name='carbonara_cli',
@@ -25,7 +25,10 @@ setup(
         'guanciale'
     ],
     entry_points={
-        'console_scripts': ['carbonara_cli = carbonara_cli.main:main']
+        'console_scripts': [
+            'carbonara_cli = carbonara_cli.main:main',
+            'carb = carbonara_cli.main:main'
+        ]
     },
 )
 
