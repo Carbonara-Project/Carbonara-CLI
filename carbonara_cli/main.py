@@ -69,7 +69,74 @@ def get_token():
     except:
         printwarn("cannot save auth token")
         pass
+
+
+def exists(md5):
+    err = get_token()
+    if err:
+        printerr(err)
+        exit(1)
     
+    headers = {"Authorization": "Bearer " + token}
+    try:
+        r = requests.head(CARBONARA_URL + "/api/program/?md5=" + md5, headers=headers)
+    except:
+        printerr("failed to connect to Carbonara")
+        exit(1)
+    if r.status_code == 404:
+        return False
+    elif r.status_code == 200 or r.status_code == 204:
+        return True
+    else:
+        printerr("invalid response")
+        exit(1)
+
+
+def identify(bi):
+    procs_dict = {}
+    
+    payload = {}
+    for p in bi.procs:
+        if p["size"] > 32:
+            payload[bi.md5+":"+str(p["offset"])] = 3
+            procs_dict[p["offset"]] = p["name"]
+    
+    r = None
+    headers = {"Authorization": "Bearer " + token}
+    err=False
+    try:
+        print(" >> Querying Carbonara...")
+        r = requests.post(CARBONARA_URL + "/api/simprocs/", headers=headers, json=payload)
+        if r.status_code != 200:
+            print(r.content)
+            err = True
+    except Exception as ee:
+        print ee
+        err = True
+    if err:
+        printerr("cannot get similar procedures")
+        
+    resp = r.json()
+    
+    result = {}
+    
+    for k in resp:
+        if len(resp[k]) == 0:
+            continue
+        off = int(k.split(":")[1])
+        
+        for r in resp[k]:
+            if r["match"] >= 85 and r["md5"] != bi.md5:
+                #print r["md5"] + "  " + r["name"]
+                result[r["md5"]] = result.get(r["md5"], 0) +1
+            else:
+                break
+    
+    bins = sorted(result, key=result.get, reverse=True)
+    print("")
+    for md5 in bins:
+        print("  %s : %d%%" % (md5, result[md5] * 100.0 / len(bi.procs)))
+    print("")
 
 
 
@@ -116,6 +183,8 @@ def main():
             i += 1
         elif sys.argv[i] == "-s" or sys.argv[i] == "--save":
             args["save"] = 1
+        elif sys.argv[i] == "-i" or sys.argv[i] == "--identify":
+            args["identify"] = 1
         elif sys.argv[i] == "-l" or sys.argv[i] == "--load":
             if i == len(sys.argv) -1:
                 printerr("arg '--load': expected one argument")
@@ -186,6 +255,10 @@ def main():
     
     start_time = time.time()
     
+    if "identify" in args and "proc" in args:
+        printerr("a binary can't be identified with only a procedure")
+        exit(1)
+    
     try:
         if r2plugin and binary == None:
             bi = BinaryInfo(R2PLUGIN)
@@ -197,25 +270,23 @@ def main():
         exit(1)
     
     if "exists" in args:
-        err = get_token()
-        if err:
-            printerr(err)
-            exit(1)
-        
-        headers = {"Authorization": "Bearer " + token}
-        try:
-            r = requests.head(CARBONARA_URL + "/api/program/?md5=" + bi.md5, headers=headers)
-        except:
-            printerr("failed to connect to Carbonara")
-            exit(1)
-        if r.status_code == 404:
-            print LCYAN + " >> The binary is not present in the Carbonara server." + NC
-        elif r.status_code == 200:
-            print LCYAN + " >> Result: " + CARBONARA_URL + "" + NC
-        else:
-            printerr("invalid response")
-            exit(1)
+        print LCYAN + " >> Result: " + str(exists(bi.md5)) + NC
         exit(0)
+    
+    if "identify" in args:
+        if exists(bi.md5) == True:
+            print(" >> The binary is already on the server")
+            if "idb" in args:
+                bi.grabProcedures("idapro", args["idb"])
+            elif "r2" in args:
+                bi.grabProcedures("radare2", args["r2"])
+            else:
+                bi.grabProcedures("radare2")
+            identify(bi)
+            exit(0)
+        else:
+            print(" >> The binary is not present in the server, so it must be analyzed.")
+    
     
     savedproc = False
     if "load" in args:
@@ -236,7 +307,6 @@ def main():
         else:
             bi.grabProcedures("radare2")
         
-    
     if "proc" in args or savedproc:
         if savedproc:
             data = json.loads(saved)
@@ -315,6 +385,9 @@ def main():
             outfile.close()
         else:
             print(" >> Successful upload")
+    
+    if "identify" in args:
+        identify(bi)
     
     del bi  
     print " >> elapsed time: " + str(time.time() - start_time)
