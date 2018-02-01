@@ -12,7 +12,7 @@ dirs = appdirs.AppDirs("carbonara_cli")
 token_path = os.path.join(os.path.dirname(dirs.user_config_dir), "carbonara_cli.token")
 
 CARBONARA_URL = "http://localhost:8000"
-CLIENT_ID="TzfN0E5s1aXIpgpc282hi975FBRoWY4Jb4ifpP3H"
+CLIENT_ID="2MBBuSf2kKNhHyDMjKi80jJPeJqzhYdzsOxzHM3z"
 
 token = None
 
