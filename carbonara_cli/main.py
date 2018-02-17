@@ -51,7 +51,7 @@ def get_token():
             "password": password
         }
         try:
-            r = requests.post(CARBONARA_URL + "/users/auth/token", data=auth_body)
+            r = requests.post(CARBONARA_URL + "/users/o/token/", data=auth_body)
         except:
             return "cannot get auth token"
         
