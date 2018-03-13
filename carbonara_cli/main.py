@@ -11,8 +11,8 @@ from guanciale import *
 dirs = appdirs.AppDirs("carbonara_cli")
 token_path = os.path.join(os.path.dirname(dirs.user_config_dir), "carbonara_cli.token")
 
-CARBONARA_URL = "http://carbonara-backend.herokuapp.com"
-CLIENT_ID="TzfN0E5s1aXIpgpc282hi975FBRoWY4Jb4ifpP3H"
+CARBONARA_URL = "http://35.195.103.73"
+CLIENT_ID="2MBBuSf2kKNhHyDMjKi80jJPeJqzhYdzsOxzHM3z"
 
 token = None
 
@@ -51,7 +51,7 @@ def get_token():
             "password": password
         }
         try:
-            r = requests.post(CARBONARA_URL + "/users/auth/token", data=auth_body)
+            r = requests.post(CARBONARA_URL + "/users/o/token/", data=auth_body)
         except:
             return "cannot get auth token"
         
@@ -191,6 +191,18 @@ def main():
                 exit(1)
             args["load"] = sys.argv[i+1]
             i += 1
+        elif sys.argv[i] == "-a" or sys.argv[i] == "--arch":
+            if i == len(sys.argv) -1:
+                printerr("arg '--arch': expected one argument")
+                exit(1)
+            args["arch"] = sys.argv[i+1]
+            i += 1
+        elif sys.argv[i] == "-b" or sys.argv[i] == "--bits":
+            if i == len(sys.argv) -1:
+                printerr("arg '--bits': expected one argument")
+                exit(1)
+            args["bits"] = sys.argv[i+1]
+            i += 1
         elif sys.argv[i] == "-r2proj":
             if i == len(sys.argv) -1:
                 printerr("arg '-r2proj': expected one argument")
@@ -259,11 +271,21 @@ def main():
         printerr("a binary can't be identified with only a procedure")
         exit(1)
     
+    if "bits" in args and "arch" not in args:
+        printerr("if you set custom bits you must also set a custom arch")
+        exit(1)
+    
+    arch_bits = {"arch": None, "bits": None}
+    if "arch" in args:
+        arch_bits["arch"] = args["arch"].lower()
+    if "bits" in args:
+        arch_bits["bits"] = args["bits"]
+    
     try:
         if r2plugin and binary == None:
-            bi = BinaryInfo(R2PLUGIN)
+            bi = BinaryInfo(R2PLUGIN, **arch_bits)
         else:
-            bi = BinaryInfo(binary)
+            bi = BinaryInfo(binary, **arch_bits)
     except IOError as err:
         print()
         printerr(err)

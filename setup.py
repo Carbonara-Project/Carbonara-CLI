@@ -7,7 +7,7 @@ __email__ = "andreafioraldi@gmail.com, willownoises@gmail.com"
 
 from setuptools import setup
 
-VER = "1.0.7"
+VER = "1.0.8"
 
 setup(
     name='carbonara_cli',
