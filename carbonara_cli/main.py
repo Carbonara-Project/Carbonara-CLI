@@ -11,7 +11,7 @@ from guanciale import *
 dirs = appdirs.AppDirs("carbonara_cli")
 token_path = os.path.join(os.path.dirname(dirs.user_config_dir), "carbonara_cli.token")
 
-CARBONARA_URL = "http://35.195.103.73"
+CARBONARA_URL = "https://carbonaraproject.com"
 CLIENT_ID="2MBBuSf2kKNhHyDMjKi80jJPeJqzhYdzsOxzHM3z"
 
 token = None
