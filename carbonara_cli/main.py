@@ -12,6 +12,7 @@ dirs = appdirs.AppDirs("carbonara_cli")
 token_path = os.path.join(os.path.dirname(dirs.user_config_dir), "carbonara_cli.token")
 
 CARBONARA_URL = "https://carbonaraproject.com"
+#CARBONARA_URL = "http://localhost:8000"
 CLIENT_ID="2MBBuSf2kKNhHyDMjKi80jJPeJqzhYdzsOxzHM3z"
 
 token = None
@@ -381,6 +382,11 @@ def main():
                 binfile = open(bi.filename, "rb")
                 try:
                     print(" >> Uploading to Carbonara...")
+                    remain = []
+                    if len(data["procs"]) > 16:
+                        remain = data["procs"][16:]
+                        data["procs"] = data["procs"][:16]
+                    
                     r = requests.post(CARBONARA_URL + "/api/report/", headers=headers, files={
                         "binary":(os.path.basename(bi.filename), binfile.read()),
                         "report":json.dumps(data)
@@ -388,6 +394,26 @@ def main():
                     if r.status_code != 200:
                         print r.content
                         err = True
+                    else:
+                        while len(remain) > 0:
+                            if len(remain) > 16:
+                                remain = remain[16:]
+                                data["procs"] = remain[:16]
+                            else:
+                                remain = []
+                                data["procs"] = remain
+                            
+                            r = requests.post(CARBONARA_URL + "/api/procs-report/", headers=headers, files={
+                            "report":json.dumps({
+                                "md5": data["program"]["md5"],
+                                "procs": data["procs"]
+                                })
+                            })
+                            if r.status_code != 200:
+                                print r.content
+                                err = True
+                                break
+                            
                 except:
                     err = True
                 binfile.close()
