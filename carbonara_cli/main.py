@@ -27,19 +27,22 @@ def get_token():
         token_file.close()
     except:
         request_token = True
-    
+
     #verify token
-    if not request_token:
+    if request_token == False:
+        done = False
         headers = {"Authorization": "Bearer " + token}
         try:
             r = requests.head(CARBONARA_URL, headers=headers)
+            done = True
         except:
-            return "cannot verify auth token"
-        
-        if r.status_code == 401 or r.status_code == 403: #token expired
             request_token = True
-        elif r.status_code != 200:
-            return "cannot verify auth token"
+        
+        if done:
+            if r.status_code == 401 or r.status_code == 403: #token expired
+                request_token = True
+            elif r.status_code != 200:
+                return "cannot verify auth token"
     
     if request_token:
         print LCYAN + " >> Login to Carbonara " + NC
@@ -168,7 +171,7 @@ def main():
     if "R2PIPE_IN" in os.environ:
         r2plugin = True
     
-    if (len(sys.argv) < 2 or sys.argv[1] == "-help") and not r2plugin:
+    if (len(sys.argv) < 2 or sys.argv[1] == "-help" or sys.argv[1] == "--help" or sys.argv[1] == "-h") and not r2plugin:
         print LMAG_BG + "  usage  " + NC + " carb [OPTIONS] <binary file> "
         exit(0)
     
