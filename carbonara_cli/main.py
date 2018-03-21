@@ -174,6 +174,28 @@ def main():
     
     if (len(sys.argv) < 2 or sys.argv[1] == "-help" or sys.argv[1] == "--help" or sys.argv[1] == "-h") and not r2plugin:
         print LMAG_BG + "  usage  " + NC + " carb [OPTIONS] <binary file> "
+        print "          carb [OPTIONS] <binary file> <IDA Pro database>"
+        print "          carb [OPTIONS] <binary file> <radare2 project>"
+        print
+        print "OPTIONS:"
+        print "   -h, --help              Show the help"
+        print "   -e, --exists            Know if the binary is already in the Carbonara database"
+        print "   -p, --proc <name>       Analyze and upload only a specified procedure"
+        print "   -s, --save              Save the json report as a file instead of uploading it to Carbonara"
+        print "   -l, --load <path>       Load a json report from the filesystem instead of analyzing the target binary"
+        print "   -i, --identify          Get a list of binaries (md5) that have procedures in common with the target"
+        print "   -a, --arch <name>       Specify by hand the architecture of the binary (useful for blobs)"
+        print "   -b, --bits <32/64>      Specify by hand the bits of the binary (useful for blobs)"
+        print 
+        print "   -r2proj <path>          Specify the radare2 project to use"
+        print "   -idb <path>             Specify the IDA Pro database to use"
+        print  
+        print "   -radare2                Specify radare2 executable path"
+        print "   -idacmd <path>          Specify IDA Pro 32 executable (ida.exe) path"
+        print "   -ida64cmd <path>        Specify IDA Pro 64 executable (ida64.exe) path"
+        print "   -reconfig               Force configure file to be regenerated automatically"
+        print "   -writeconfig            Write custom paths (radare and IDA) to config file"
+        print
         exit(0)
     
     i = 1
