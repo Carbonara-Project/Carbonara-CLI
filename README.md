@@ -65,3 +65,9 @@ Options:
 ## Demo
 
 [![asciicast](https://asciinema.org/a/ECF81EJuVWtGCqkw69sZHL3Zi.png)](https://asciinema.org/a/ECF81EJuVWtGCqkw69sZHL3Zi)
+
+## Related packages
+
++ [Carbonara-R2](https://github.com/Carbonara-Project/Carbonara-R2), a plugin for radare2 with suport to similar procedures renaming
++ [Guanciale](https://github.com/Carbonara-Project/Guanciale), the analysis engine library
+
