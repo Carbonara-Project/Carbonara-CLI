@@ -60,3 +60,7 @@ Options:
 -reconfig               Force configure file to be regenerated automatically
 -writeconfig            Write custom paths (radare and IDA) to config file
 ```
+
+## Demo
+
+[![asciicast](https://asciinema.org/a/ECF81EJuVWtGCqkw69sZHL3Zi.png)](https://asciinema.org/a/ECF81EJuVWtGCqkw69sZHL3Zi)
