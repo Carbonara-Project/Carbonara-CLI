@@ -1,6 +1,7 @@
 # Carbonara-CLI
-CLI client for Carbonara
-Analyze a binary and send info to the Carbonara server.
+CLI client for Carbonara.
+
+Analyze a binary and send the extracted info to the Carbonara server.
 
 ## Install
 You can install carbonara_cli from pip or directly from this repo.
