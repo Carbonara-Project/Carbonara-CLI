@@ -43,6 +43,7 @@ def get_token():
                 request_token = True
             elif r.status_code != 200:
                 return "cannot verify auth token"
+                request_token = True
     
     if request_token:
         print LCYAN + " >> Login to Carbonara " + NC
@@ -101,7 +102,7 @@ def identify(bi):
     
     payload = {}
     for p in bi.procs:
-        if p["size"] > 32:
+        if ("raw_len" in p and p["raw_len"] > 32) or ("size" in p and p["size"] > 32):
             payload[bi.md5+":"+str(p["offset"])] = 3
             procs_dict[p["offset"]] = p["name"]
     
