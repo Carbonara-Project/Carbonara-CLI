@@ -33,15 +33,16 @@ def get_token():
         done = False
         headers = {"Authorization": "Bearer " + token}
         try:
-            r = requests.head(CARBONARA_URL, headers=headers)
+            r = requests.head(CARBONARA_URL + "/api/program/", headers=headers)
             done = True
+            #print r
         except:
             request_token = True
         
         if done:
             if r.status_code == 401 or r.status_code == 403: #token expired
                 request_token = True
-            elif r.status_code != 200:
+            elif r.status_code != 400 and r.status_code != 200 and r.status_code != 204:
                 return "cannot verify auth token"
                 request_token = True
     
