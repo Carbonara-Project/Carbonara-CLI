@@ -62,6 +62,12 @@ Options:
 -writeconfig            Write custom paths (radare and IDA) to config file
 ```
 
+Supported architectures:
++ x86 32/64 bits
++ ARM 32/64 bits
++ MIPS 32/64 bits
++ PPC 32/64 bits
+
 ## Demo
 
 [![asciicast](https://asciinema.org/a/ECF81EJuVWtGCqkw69sZHL3Zi.png)](https://asciinema.org/a/ECF81EJuVWtGCqkw69sZHL3Zi)
