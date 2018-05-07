@@ -147,10 +147,10 @@ def identify(bi):
 
 
 def rename(bi, mode, treshold, binary):
-    cmds = []
-           
+    rename_dict = {}
+    procs_dict = {}
+    
     for i in xrange(0, len(bi.procs), 16):
-        procs_dict = {}
         max_proc_name = 0
         
         payload = {}
@@ -189,23 +189,35 @@ def rename(bi, mode, treshold, binary):
             for r in resp[k]:
                 if r["match"] >= treshold:
                     if (not r["name"].startswith("fcn.")) and (hex(r["offset"])[2:] not in r["name"]) and (not r["name"].startswith("sub_")) and (hex(r["offset"])[2:] not in r["name"]):
-                        #print procs_dict[off] + " " * (max_proc_name - len(procs_dict[off])) + " --> " + r["name"] + "\t(" + r["md5"] + ":" + hex(r["offset"]) + ")"
-                        cmds.append((r["name"], off))
-                        break
-                else:
-                    break
-    
+                        rename_dict[off] = rename_dict.get(off, []) + [r]
+            
     out = ""
     if mode == "ida":
         out += "#include <idc.idc>\n"
         out += "static main() {\n"
-        for name, off in cmds:
-            out += "MakeName(0x%x, \"%s\");\n" % (off, name.replace('"', '\\\"'))
+        for off in sorted(rename_dict.keys()):
+            first = True
+            out += "///////// " + procs_dict.get(off, "function at 0x%x" % off) + "\n"
+            for r in sorted(rename_dict[off], key=lambda x: x["match"], reverse=True):
+                if first:
+                    out += "MakeName(0x%x, \"%s\"); // similarity:%d   %s\n" % (off, r["name"], r["match"], "https://carbonaraproject.com/#/binary/"+r["md5"]+"/"+str(r["offset"]))
+                    first = False
+                else:
+                    out += "//MakeName(0x%x, \"%s\"); // similarity:%d   %s\n" % (off, r["name"], r["match"], "https://carbonaraproject.com/#/binary/"+r["md5"]+"/"+str(r["offset"]))
+            out += "\n"
         out += "}\n"
         outname = os.path.basename(binary) + ".rename_script.idc"
     elif mode == "r2":
-        for t in cmds:
-            out += "afn %s 0x%x\n" % t
+        for off in sorted(rename_dict.keys()):
+            first = True
+            out += "######### " + procs_dict.get(off, "function at 0x%x" % off) + "\n"
+            for r in sorted(rename_dict[off], key=lambda x: x["match"], reverse=True):
+                if first:
+                    out += "afn %s 0x%x # similarity:%d   %s\n" % (r["name"], off, r["match"], "https://carbonaraproject.com/#/binary/"+r["md5"]+"/"+str(r["offset"]))
+                    first = False
+                else:
+                    out += "#afn %s 0x%x # similarity:%d   %s\n" % (r["name"], off, r["match"], "https://carbonaraproject.com/#/binary/"+r["md5"]+"/"+str(r["offset"]))
+            out += "\n"
         outname = os.path.basename(binary) + ".rename_script.r2"
     
     outfile = open(outname, "w")
