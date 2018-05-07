@@ -146,8 +146,77 @@ def identify(bi):
 
 
 
+def rename(bi, mode, treshold, binary):
+    cmds = []
+           
+    for i in xrange(0, len(bi.procs), 16):
+        procs_dict = {}
+        max_proc_name = 0
+        
+        payload = {}
+        
+        for j in xrange(i, i+16):
+            if j >= len(bi.procs):
+                break
+            p = bi.procs[j]
+            payload[bi.md5+":"+str(p["offset"])] = 3
+            procs_dict[p["offset"]] = p["name"]
+            max_proc_name = max(max_proc_name, len(p["name"]))
+        
+        r = None
+        headers = {"Authorization": "Bearer " + token}
+        err=False
+        try:
+            print(" >> Querying Carbonara...")
+            r = requests.post(CARBONARA_URL + "/api/simprocs/", headers=headers, json=payload)
+            if r.status_code != 200:
+                print r.content
+                err = True
+        except Exception as ee:
+            #print ee
+            err = True
+        if err:
+            printwarn("cannot get simprocs")
+            continue
+        
+        resp = r.json()
+        
+        for k in resp:
+            if len(resp[k]) == 0:
+                continue
+            off = int(k.split(":")[1])
+            
+            for r in resp[k]:
+                if r["match"] >= treshold:
+                    if (not r["name"].startswith("fcn.")) and (hex(r["offset"])[2:] not in r["name"]) and (not r["name"].startswith("sub_")) and (hex(r["offset"])[2:] not in r["name"]):
+                        #print procs_dict[off] + " " * (max_proc_name - len(procs_dict[off])) + " --> " + r["name"] + "\t(" + r["md5"] + ":" + hex(r["offset"]) + ")"
+                        cmds.append((r["name"], off))
+                        break
+                else:
+                    break
+    
+    out = ""
+    if mode == "ida":
+        out += "#include <idc.idc>\n"
+        out += "static main() {\n"
+        for name, off in cmds:
+            out += "MakeName(0x%x, \"%s\");\n" % (off, name.replace('"', '\\\"'))
+        out += "}\n"
+        outname = os.path.basename(binary) + ".rename_script.idc"
+    elif mode == "r2":
+        for t in cmds:
+            out += "afn %s 0x%x\n" % t
+        outname = os.path.basename(binary) + ".rename_script.r2"
+    
+    outfile = open(outname, "w")
+    outfile.write(out)
+    outfile.close()
+    
+    print(" >> Rename script saved as %s" % outname)
+    
+
 def main():
-    args = {}
+    args = {"treshold": 90}
     binary = None
     hasdb = False
 
@@ -185,10 +254,12 @@ def main():
         print "   -s, --save              Save the json report as a file instead of uploading it to Carbonara"
         print "   -l, --load <path>       Load a json report from the filesystem instead of analyzing the target binary"
         print "   -i, --identify          Get a list of binaries (md5) that have procedures in common with the target"
+        print "   -r, --rename <ida|r2>   Create a script that renames each procedure with the name of a similar procedure in our server if the matching treshold is >= TRESHOLD"
+        print "   -t, --treshold <int>    Set TRESHOLD (optional, default 90)"
         print "   -a, --arch <name>       Specify by hand the architecture of the binary (useful for blobs)"
         print "   -b, --bits <32/64>      Specify by hand the bits of the binary (useful for blobs)"
         print 
-        print "   -r2proj <path>          Specify the radare2 project to use"
+        #print "   -r2proj <path>          Specify the radare2 project to use"
         print "   -idb <path>             Specify the IDA Pro database to use"
         print  
         print "   -radare2                Specify radare2 executable path"
@@ -203,6 +274,27 @@ def main():
     while i < len(sys.argv):
         if sys.argv[i] == "-e" or sys.argv[i] == "--exists":
             args["exists"] = 1
+        elif sys.argv[i] == "-r" or sys.argv[i] == "--rename":
+            if i == len(sys.argv) -1:
+                printerr("arg '--rename': expected one argument")
+                exit(1)
+            a = sys.argv[i+1]
+            if a not in ["ida","r2"]:
+                printerr("arg '--rename': the argument must 'ida' or 'r2'")
+                haserr = True
+            else:
+                args["rename"] = a
+            i += 1
+        elif sys.argv[i] == "-t" or sys.argv[i] == "--treshold":
+            if i == len(sys.argv) -1:
+                printerr("arg '--treshold': expected one argument")
+                exit(1)
+            try:
+                args["treshold"] = int(sys.argv[i+1])
+            except:
+                printerr("arg '--treshold': the argument must be a number")
+                haserr = True
+            i += 1
         elif sys.argv[i] == "-p" or sys.argv[i] == "--proc":
             if i == len(sys.argv) -1:
                 printerr("arg '--proc': expected one argument")
@@ -336,7 +428,19 @@ def main():
             exit(0)
         else:
             print(" >> The binary is not present in the server, so it must be analyzed.")
-    
+    elif "rename" in args:
+        if exists(bi.md5) == True:
+            print(" >> The binary is already on the server")
+            if "idb" in args:
+                bi.grabProcedures("idapro", args["idb"])
+            elif "r2" in args:
+                bi.grabProcedures("radare2", args["r2"])
+            else:
+                bi.grabProcedures("radare2")
+            rename(bi, args["rename"], args["treshold"], binary)
+            exit(0)
+        else:
+            print(" >> The binary is not present in the server, so it must be analyzed.")
     
     savedproc = False
     if "load" in args:
@@ -463,6 +567,8 @@ def main():
     
     if "identify" in args:
         identify(bi)
+    elif "rename" in args:
+        rename(bi, args["rename"], args["treshold"], binary)
     
     del bi  
     print " >> elapsed time: " + str(time.time() - start_time)
