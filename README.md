@@ -49,10 +49,11 @@ Options:
 -s, --save              Save the json report as a file instead of uploading it to Carbonara
 -l, --load <path>       Load a json report from the filesystem instead of analyzing the target binary
 -i, --identify          Get a list of binaries (md5) that have procedures in common with the target
+-r, --rename <ida|r2>   Create a script that renames each procedure with the name of a similar procedure in our server if the matching treshold is >= TRESHOLD
+-t, --treshold <int>    Set TRESHOLD (optional, default 90)
 -a, --arch <name>       Specify by hand the architecture of the binary (useful for blobs)
 -b, --bits <32/64>      Specify by hand the bits of the binary (useful for blobs)
 
--r2proj <path>          Specify the radare2 project to use
 -idb <path>             Specify the IDA Pro database to use
 
 -radare2                Specify radare2 executable path
